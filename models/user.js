@@ -1,36 +1,32 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const AddressSchema = mongoose.Schema({
-    address_name:{
-        type: String,
-        required: true,
-        trim: true
-    },
-    country: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    state: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    city:{
-        type: String,
-        required: true,
-        trim: true
-    }
-})
-
-
-const EmployeeSchema = mongoose.Schema({
+const UserSchema = mongoose.Schema({
     name:{
         type: String,
         required: true,
         trim: true
     },
-    last_name: {
+    last_name:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    address: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    country:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    state:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    city: {
         type: String,
         required: true,
         trim: true
@@ -40,21 +36,16 @@ const EmployeeSchema = mongoose.Schema({
         required: true,
         trim: true
     },
-    password: {
+    password:{
         type: String,
         required: true,
         trim: true
     },
-    address: AddressSchema,
-    id_position: {
-        type: mongoose.Schema.Types.ObjectId,
+    cell_phone:{
+        type: Number,
         required: true,
-        ref: 'Position'
-    },
-    active: {
-        type: Boolean,
-        default: true
+        trim: true
     }
 })
 
-module.exports = mongoose.model('Employee', EmployeeSchema)
+export default mongoose.model('User', UserSchema);

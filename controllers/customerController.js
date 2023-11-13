@@ -1,10 +1,10 @@
-const Customer = require('../models/customer');
-const bycrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const {validationResult} = require('express-validator');
-const customer = require('../models/customer');
+import User from '../models/user.js'
+import bycrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { validationResult } from 'express-validator';
 
-exports.signupCustomer = async(req,res)=> {
+
+export const signupCustomer = async(req,res)=> {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()})
@@ -12,26 +12,26 @@ exports.signupCustomer = async(req,res)=> {
     const {email, password} = req.body;
 
     try{
-        let customer = await Customer.findOne({email});
+        let  user = await User.findOne({email});
 
-        if(customer) {
-            return res.status(400).json({errors: "The customer is allready create"});
+        if(user) {
+            return res.status(400).json({errors: "The user is allready create"});
         }
 
-        customer = new Customer(req.body);
+        user = new User(req.body);
 
         const salt = await bycrypt.genSalt(10);
-        customer.password = await bycrypt.hash(password,salt);
+        user.password = await bycrypt.hash(password,salt);
 
-        await customer.save();
+        await user.save();
 
         const payload = {
-            customer: {
-                id: customer.id
+            user: {
+                id: user.id
             }
         }
 
-        jwt.sign(payload, "Customer", {
+        jwt.sign(payload, "User", {
         }, (error, token) => {
             if(error) throw error;
 
@@ -45,7 +45,7 @@ exports.signupCustomer = async(req,res)=> {
 
 }
 
-exports.signinCustomer = async(req,res) => {
+export const signinCustomer = async(req,res) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
@@ -54,23 +54,23 @@ exports.signinCustomer = async(req,res) => {
     const {email, password} = req.body;
 
     try{
-        let customer = await Customer.findOne({email});
-        if(!customer) {
-            return res.status(400).json({msg: 'The customer does not exist'});
+        let user = await User.findOne({email});
+        if(!user) {
+            return res.status(400).json({msg: 'The user does not exist'});
         }
 
-        const passCorrect = await bycrypt.compare(password, customer.password);
+        const passCorrect = await bycrypt.compare(password, user.password);
         if(!passCorrect){
             return res.status(400).json({msg: 'Password Incorrect'});
         }
 
         const payload = {
-            customer: {
-                id: customer.id
+            user: {
+                id: user.id
             }
         };
 
-        jwt.sign(payload, "Customer",{}, (error, token) => {
+        jwt.sign(payload, "User",{}, (error, token) => {
             if(error) throw error;
 
             res.json({token});
@@ -81,15 +81,15 @@ exports.signinCustomer = async(req,res) => {
     }
 }
 
-exports.updateCustomer = async(req,res) => {
+export const updateCustomer = async(req,res) => {
     try{
         const {name, last_name} = req.body;
-        let customer = await Customer.findById(req.customer);
+        let user = await User.findById(req.user);
         const newCustomer = {}
         newCustomer.name = name;
         newCustomer.last_name = last_name;
-        customer = await Customer.findOneAndUpdate({_id : req.customer}, newCustomer, {new: true});
-        res.send(customer);
+        user = await User.findOneAndUpdate({_id : req.user}, newCustomer, {new: true});
+        res.send(user);
 
     }catch(error){
         console.log(error);
@@ -97,25 +97,25 @@ exports.updateCustomer = async(req,res) => {
     }
 }
 
-exports.getCustomer = async(req,res) => {
+export const getCustomer = async(req,res) => {
     try{
-        let customer = await Customer.findById(req.customer);
-        res.send(customer);
+        let user = await User.findById(req.user);
+        res.send(user);
     }catch(error){
         console.log(error);
         res.state(400).send(error);
     }
 }
 
-exports.deleteCustomer = async(req,res) => {
+export const deleteCustomer = async(req,res) => {
     try{
-        let customer = await Customer.findById(req.params.id);
+        let user = await User.findById(req.params.id);
 
-        if (!customer){
-            return res.status(401).json({error: 'Doesnt exist the customer'})
+        if (!user){
+            return res.status(401).json({error: 'Doesnt exist the user'})
         }
 
-        await Customer.findOneAndRemove({_id: req.params.id});
+        await User.findOneAndRemove({_id: req.params.id});
         res.send("It´s deleted");
     }catch(error){
         console.log(error);

@@ -1,10 +1,11 @@
-const express = require('express');
-const { check } = require('express-validator');
-const router = express.Router();
-const customerController = require('../controllers/customerController');
-const customer = require('../middleware/customer');
+import express from 'express'
+import { check } from 'express-validator';
 
-router.post('/create',
+const router = express.Router();
+import {signupCustomer, signinCustomer,updateCustomer,getCustomer,deleteCustomer} from '../controllers/customerController.js'
+import middleware from '../middleware/customer.js'
+
+router.post('/',
     [
         check('name', 'Its necessary a name').not().isEmpty(),
         check('last_name', 'Its necessary a last name').not().isEmpty(),
@@ -16,7 +17,7 @@ router.post('/create',
         check('password','The password need 6 characters min').isLength({ min: 6}),
         check('cell_phone','Its necessary a cellphone').isLength({ min: 10}),
     ],
-    customerController.signupCustomer
+    signupCustomer
 )
 
 router.post('/login',
@@ -24,21 +25,21 @@ router.post('/login',
         check('email','Its necessary a correct email').isEmail(),
         check('password','The password need 6 characters min').isLength({ min: 6}) 
     ],
-    customerController.signinCustomer
+    signinCustomer
 )
 
 router.put('/update',
-    customer,
-    customerController.updateCustomer 
+    middleware,
+    updateCustomer 
 )
 
 router.get('/get',
-    customer,
-    customerController.getCustomer
+    middleware,
+    getCustomer
 )
 
 router.delete('/delete/:id',
-    customerController.deleteCustomer
+    deleteCustomer
 )
-module.exports = router;
+export default router
 
