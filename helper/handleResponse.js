@@ -11,6 +11,24 @@ export const okRequest = (res,data) => {
     return res.json(response)
 }
 
+export const badRequest = (res,data) => {
+    response = {
+        status: 400,
+        data
+    }
+    
+    return res.status(400).json(response)
+}
+
+export const preconditionRequiredRequest = (res,data) => {
+    response = {
+        status: 428,
+        data
+    }
+    
+    return res.status(428).json(response)
+}
+
 export const internalServerError = (res) => {
     response = {
         status: 500,
