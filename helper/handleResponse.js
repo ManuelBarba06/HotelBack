@@ -20,6 +20,15 @@ export const badRequest = (res,data) => {
     return res.status(400).json(response)
 }
 
+export const unauthorizedRequest = (res,data) => {
+    response = {
+        status: 401,
+        data
+    }
+    
+    return res.status(401).json(response)
+}
+
 export const preconditionRequiredRequest = (res,data) => {
     response = {
         status: 428,

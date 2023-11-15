@@ -1,28 +1,25 @@
 import express from 'express'
-import { check } from 'express-validator';
 
-import {signinCustomer,updateCustomer,getCustomer,deleteCustomer} from '../controllers/userController.js'
-import { signupCustomer } from '../controllers/customerController.js';
+import { signinCustomer,getCustomer,deleteCustomer } from '../controllers/userController.js'
+import { signupCustomer,updateCustomer } from '../controllers/customerController.js';
 import middleware from '../middleware/customer.js'
-import { userValidation } from '../validation/user.js';
+import { userValidation, userSigninValidation, userUpdateValidation } from '../validation/user.js';
 
 const router = express.Router();
+
+router.post('/signin',
+    userSigninValidation,
+    signinCustomer
+)
 
 router.post('/create/customer',
     userValidation,
     signupCustomer
 )
 
-router.post('/login',
-    [
-        check('email','Its necessary a correct email').isEmail(),
-        check('password','The password need 6 characters min').isLength({ min: 6}) 
-    ],
-    signinCustomer
-)
-
-router.put('/update',
+router.put('/update/customer/:id',
     middleware,
+    userUpdateValidation,
     updateCustomer 
 )
 

@@ -4,8 +4,7 @@ export const rolesData = [
         permissions: [
             "h-add-customer",
             "h-edit-customer",
-            "h-delete-customer",
-            "h-show-customer"
+            "h-delete-customer"
         ]
     }
 ]

@@ -2,25 +2,31 @@ import User from '../models/user.js'
 import bycrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { validationResult } from 'express-validator';
+import { badRequest, internalServerError, okRequest } from '../helper/handleResponse.js';
 
 
 export const signinCustomer = async(req,res) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()});
+    
+    if(!errors.isEmpty()){ //Show error json body
+        return badRequest(res,{msg: errors.array()})
     }
 
     const {email, password} = req.body;
 
-    try{
+    try{ //Validate email and password
         let user = await User.findOne({email});
         if(!user) {
-            return res.status(400).json({msg: 'The user does not exist'});
+            return badRequest(res, {
+                msg: "Correo o contraseña incorrecta"
+            })
         }
 
         const passCorrect = await bycrypt.compare(password, user.password);
         if(!passCorrect){
-            return res.status(400).json({msg: 'Password Incorrect'});
+            return badRequest(res, {
+                msg: "Correo o contraseña incorrecta"
+            })
         }
 
         const payload = {
@@ -28,31 +34,20 @@ export const signinCustomer = async(req,res) => {
                 id: user.id
             }
         };
-
-        jwt.sign(payload, "User",{}, (error, token) => {
+        
+        
+        jwt.sign(payload, process.env.SECRET_KEY, {
+        },(error, token) => {
             if(error) throw error;
 
-            res.json({token});
+            okRequest(res,{
+                token
+            })
         });
+        
     }catch(error){
         console.log(error);
-        res.state(400).send(error)
-    }
-}
-
-export const updateCustomer = async(req,res) => {
-    try{
-        const {name, last_name} = req.body;
-        let user = await User.findById(req.user);
-        const newCustomer = {}
-        newCustomer.name = name;
-        newCustomer.last_name = last_name;
-        user = await User.findOneAndUpdate({_id : req.user}, newCustomer, {new: true});
-        res.send(user);
-
-    }catch(error){
-        console.log(error);
-        res.state(400).send(error)
+        internalServerError(res)
     }
 }
 
