@@ -44,7 +44,7 @@ export const notFoundRequest = (res,data) => {
         data
     }
     
-    return res.status(428).json(response)
+    return res.status(404).json(response)
 }
 
 export const internalServerError = (res) => {

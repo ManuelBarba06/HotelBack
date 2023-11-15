@@ -111,10 +111,9 @@ export const deleteCustomer = async(req,res) => {
         }
         const user = await User.findById(req.params.id);
 
-        if (!user){
-            notFoundRequest(res, {msg: "Usuario no encontrado"})
+        if (!user || user == null){
+            return notFoundRequest(res, {msg: "Usuario no encontrado"})
         }
-        
         
         user.delete()
         
