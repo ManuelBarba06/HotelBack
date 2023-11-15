@@ -13,8 +13,9 @@ export default function(req, res, next){
     const token = authorization.replace('Bearer ', '');
     
     const encryption = jwt.verify(token, process.env.SECRET_KEY);
-
-    req.customer = encryption.user.id;
+    
+    req.user = encryption.user.id;
+    
     next();
 
     }catch(error){

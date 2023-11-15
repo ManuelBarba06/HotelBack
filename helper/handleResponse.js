@@ -38,6 +38,15 @@ export const preconditionRequiredRequest = (res,data) => {
     return res.status(428).json(response)
 }
 
+export const notFoundRequest = (res,data) => {
+    response = {
+        status: 404,
+        data
+    }
+    
+    return res.status(428).json(response)
+}
+
 export const internalServerError = (res) => {
     response = {
         status: 500,

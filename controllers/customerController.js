@@ -5,7 +5,7 @@ import { validationResult } from 'express-validator';
 import User from '../models/user.js'
 import Role from '../models/role.js'
 
-import { badRequest, internalServerError, okRequest, preconditionRequiredRequest } from '../helper/handleResponse.js';
+import { badRequest, internalServerError, notFoundRequest, okRequest, preconditionRequiredRequest } from '../helper/handleResponse.js';
 import parseMongoId from '../helper/parseMongoId.js';
 
 export const signupCustomer = async(req,res)=> {
@@ -79,13 +79,13 @@ export const updateCustomer = async(req,res) => {
         let user = await User.findById(id); //Validate if the user exist
         
         if (!user) {
-            return badRequest(res,"Usuario no existe")
+            return notFoundRequest(res,{msg: "Usuario no existe"})
         }
         
         const emailExist = await User.findOne({email}) //Validate is the email is unique
         
         if (emailExist) {
-            return badRequest(res,"Email ya existe")
+            return badRequest(res,{msg: "Email ya existe"})
         }
         
         const newCustomer = body
@@ -97,7 +97,28 @@ export const updateCustomer = async(req,res) => {
         
         user = await User.findOneAndUpdate({_id : id}, newCustomer, {new: true}).select("-_id -role -__V");
         
-        okRequest(res,{data: user})
+        okRequest(res, user)
+    }catch(error){
+        console.log(error);
+        internalServerError(res)
+    }
+}
+
+export const deleteCustomer = async(req,res) => {    
+    try{
+        if (!parseMongoId(req.params.id)) {
+            return badRequest(res,{msg: "The id is not a uuid valid"})
+        }
+        const user = await User.findById(req.params.id);
+
+        if (!user){
+            notFoundRequest(res, {msg: "Usuario no encontrado"})
+        }
+        
+        
+        user.delete()
+        
+        okRequest(res,{msg: "Eliminado exitosamente"})
     }catch(error){
         console.log(error);
         internalServerError(res)

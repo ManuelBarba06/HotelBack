@@ -1,7 +1,7 @@
 import express from 'express'
 
-import { signinCustomer,getCustomer,deleteCustomer } from '../controllers/userController.js'
-import { signupCustomer,updateCustomer } from '../controllers/customerController.js';
+import { signinCustomer,getUser } from '../controllers/userController.js'
+import { signupCustomer,updateCustomer, deleteCustomer} from '../controllers/customerController.js';
 import middleware from '../middleware/customer.js'
 import { userValidation, userSigninValidation, userUpdateValidation } from '../validation/user.js';
 
@@ -23,12 +23,13 @@ router.put('/update/customer/:id',
     updateCustomer 
 )
 
-router.get('/get',
+router.get('/getOne',
     middleware,
-    getCustomer
+    getUser
 )
 
-router.delete('/delete/:id',
+router.delete('/delete/customer/:id',
+    middleware,
     deleteCustomer
 )
 export default router

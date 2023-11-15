@@ -2,7 +2,7 @@ import User from '../models/user.js'
 import bycrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { validationResult } from 'express-validator';
-import { badRequest, internalServerError, okRequest } from '../helper/handleResponse.js';
+import { badRequest, internalServerError, notFoundRequest, okRequest } from '../helper/handleResponse.js';
 
 
 export const signinCustomer = async(req,res) => {
@@ -51,28 +51,19 @@ export const signinCustomer = async(req,res) => {
     }
 }
 
-export const getCustomer = async(req,res) => {
+export const getUser = async(req,res) => {
     try{
         let user = await User.findById(req.user);
-        res.send(user);
-    }catch(error){
-        console.log(error);
-        res.state(400).send(error);
-    }
-}
-
-export const deleteCustomer = async(req,res) => {
-    try{
-        let user = await User.findById(req.params.id);
-
-        if (!user){
-            return res.status(401).json({error: 'Doesnt exist the user'})
+        
+        if (!user) {
+            notFoundRequest(res,'Usuario no encontrado')
         }
-
-        await User.findOneAndRemove({_id: req.params.id});
-        res.send("It´s deleted");
+        
+        okRequest(res, user)
     }catch(error){
         console.log(error);
         res.state(400).send(error);
     }
 }
+
+
