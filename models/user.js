@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongoose_delete from "mongoose-delete";
 
 const UserSchema = mongoose.Schema({
     name:{
@@ -45,7 +46,14 @@ const UserSchema = mongoose.Schema({
         type: Number,
         required: true,
         trim: true
+    },
+    role: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        required: true
     }
 })
+
+UserSchema.plugin(mongoose_delete, {overrideMethods: true })
 
 export default mongoose.model('User', UserSchema);

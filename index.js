@@ -4,7 +4,7 @@ import dotenv from 'dotenv/config.js'
 import connectDb from './config/db.js';
 
 //Routes
-import customerRoutes from './routes/customer.js'
+import userRoutes from './routes/user.js'
 import roleRoutes from './routes/role.js'
 import seederRoutes from './routes/seeder.js'
 
@@ -17,7 +17,7 @@ connectDb();
 app.use(express.json({extended: true}));
 
 
-app.use(`${version}/customer`, customerRoutes);
+app.use(`${version}/user`, userRoutes);
 app.use(`${version}/position`, roleRoutes);
 app.use(`${version}/seeder`, seederRoutes)
 // app.use(`${version}/employee`, require('./routes/employee'));
