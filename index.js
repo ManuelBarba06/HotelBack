@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import dotenv from 'dotenv/config.js'
 //Db
 import connectDb from './config/db.js';
@@ -13,6 +14,8 @@ const port = process.env.PORT || 4000;
 const version = "/api/V1"
 
 connectDb();
+
+app.use(cors())
 
 app.use(express.json({extended: true}));
 
