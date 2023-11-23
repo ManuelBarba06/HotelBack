@@ -1,124 +1,125 @@
-const Customer = require('../models/customer');
-const bycrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const {validationResult} = require('express-validator');
-const customer = require('../models/customer');
+import bycrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { validationResult } from 'express-validator';
 
-exports.signupCustomer = async(req,res)=> {
+import User from '../models/user.js'
+import Role from '../models/role.js'
+
+import { badRequest, internalServerError, notFoundRequest, okRequest, preconditionRequiredRequest } from '../helper/handleResponse.js';
+import parseMongoId from '../helper/parseMongoId.js';
+
+export const signupCustomer = async(req,res)=> {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()})
+    
+    if(!errors.isEmpty()){ //Show error json body
+        return badRequest(res,{msg: errors.array()})
     }
+    
     const {email, password} = req.body;
 
     try{
-        let customer = await Customer.findOne({email});
-
-        if(customer) {
-            return res.status(400).json({errors: "The customer is allready create"});
+        const role = await Role.findOne({name_role: "customer"})
+        
+        if(!role) { //Validate if the role exist
+            return preconditionRequiredRequest(res,{msg: "Ejecuta el seeder antes de crear un nuevo usuario"})
         }
-
-        customer = new Customer(req.body);
-
+        
+        let  user = await User.findOne({email}); //Validate if user exists
+        
+        if(user) {
+            return badRequest(res, {msg: `El correo ${email} ya existe`})
+        }
+        
+        req.body.role = role._id //Add the role
+        
+        user = new User(req.body);
+        
         const salt = await bycrypt.genSalt(10);
-        customer.password = await bycrypt.hash(password,salt);
-
-        await customer.save();
-
+        user.password = await bycrypt.hash(password,salt);
+        
+        await user.save();
+        
         const payload = {
-            customer: {
-                id: customer.id
+            user: {
+                id: user.id
             }
         }
-
-        jwt.sign(payload, "Customer", {
+        
+        jwt.sign(payload, process.env.SECRET_KEY, {
         }, (error, token) => {
             if(error) throw error;
-
-            res.json({token});
+            
+            okRequest(res,{token})
         });
 
     }catch(error){
         console.log(error);
-        res.status(400).send(error);
+        internalServerError(res)
     }
 
 }
 
-exports.signinCustomer = async(req,res) => {
+export const updateCustomer = async(req,res) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()});
+    
+    if(!errors.isEmpty()){ //Show error json body
+        return badRequest(res,{msg: errors.array()})
     }
-
-    const {email, password} = req.body;
-
+    
     try{
-        let customer = await Customer.findOne({email});
-        if(!customer) {
-            return res.status(400).json({msg: 'The customer does not exist'});
+        const {email, password} = req.body;
+        const {id} = req.params
+        
+        const body = req.body
+        
+        if (!parseMongoId(id)) {
+            return badRequest(res,"The id is not a uuid valid")
         }
-
-        const passCorrect = await bycrypt.compare(password, customer.password);
-        if(!passCorrect){
-            return res.status(400).json({msg: 'Password Incorrect'});
+        
+        let user = await User.findById(id); //Validate if the user exist
+        
+        if (!user) {
+            return notFoundRequest(res,{msg: "Usuario no existe"})
         }
-
-        const payload = {
-            customer: {
-                id: customer.id
-            }
-        };
-
-        jwt.sign(payload, "Customer",{}, (error, token) => {
-            if(error) throw error;
-
-            res.json({token});
-        });
+        
+        const emailExist = await User.findOne({email}) //Validate is the email is unique
+        
+        if (emailExist) {
+            return badRequest(res,{msg: "Email ya existe"})
+        }
+        
+        const newCustomer = body
+        
+        if (password){
+            const salt = await bycrypt.genSalt(10);
+            newCustomer.password = await bycrypt.hash(password,salt);
+        }
+        
+        user = await User.findOneAndUpdate({_id : id}, newCustomer, {new: true}).select("-_id -role -__V");
+        
+        okRequest(res, user)
     }catch(error){
         console.log(error);
-        res.state(400).send(error)
+        internalServerError(res)
     }
 }
 
-exports.updateCustomer = async(req,res) => {
+export const deleteCustomer = async(req,res) => {    
     try{
-        const {name, last_name} = req.body;
-        let customer = await Customer.findById(req.customer);
-        const newCustomer = {}
-        newCustomer.name = name;
-        newCustomer.last_name = last_name;
-        customer = await Customer.findOneAndUpdate({_id : req.customer}, newCustomer, {new: true});
-        res.send(customer);
-
-    }catch(error){
-        console.log(error);
-        res.state(400).send(error)
-    }
-}
-
-exports.getCustomer = async(req,res) => {
-    try{
-        let customer = await Customer.findById(req.customer);
-        res.send(customer);
-    }catch(error){
-        console.log(error);
-        res.state(400).send(error);
-    }
-}
-
-exports.deleteCustomer = async(req,res) => {
-    try{
-        let customer = await Customer.findById(req.params.id);
-
-        if (!customer){
-            return res.status(401).json({error: 'Doesnt exist the customer'})
+        if (!parseMongoId(req.params.id)) {
+            return badRequest(res,{msg: "The id is not a uuid valid"})
         }
+        const user = await User.findById(req.params.id);
 
-        await Customer.findOneAndRemove({_id: req.params.id});
-        res.send("It´s deleted");
+        if (!user || user == null){
+            return notFoundRequest(res, {msg: "Usuario no encontrado"})
+        }
+        
+        user.delete()
+        
+        okRequest(res,{msg: "Eliminado exitosamente"})
     }catch(error){
         console.log(error);
-        res.state(400).send(error);
+        internalServerError(res)
     }
 }

@@ -1,17 +1,30 @@
-const express = require('express');
-const conectarDB = require("./config/db");
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv/config.js'
+//Db
+import connectDb from './config/db.js';
+
+//Routes
+import userRoutes from './routes/user.js'
+import roleRoutes from './routes/role.js'
+import seederRoutes from './routes/seeder.js'
+
 const app = express();
+const port = process.env.PORT || 4000;
+const version = "/api/V1"
 
-conectarDB();
+connectDb();
 
-const PORT = process.env.PORT || 4000;
+app.use(cors())
 
 app.use(express.json({extended: true}));
 
-app.use('/customer', require('./routes/customer'));
-app.use('/api/v1/position', require('./routes/position'));
-app.use('/api/v1/employee', require('./routes/employee'));
 
-app.listen(PORT, () => {
-    console.log(`The server is using the port:  ${PORT}`);
+app.use(`${version}/user`, userRoutes);
+app.use(`${version}/position`, roleRoutes);
+app.use(`${version}/seeder`, seederRoutes)
+// app.use(`${version}/employee`, require('./routes/employee'));
+
+app.listen(port, () => {
+    console.log(`The server is using the port:  ${port}`);
 })

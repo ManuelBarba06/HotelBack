@@ -1,19 +1,22 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken'
+import { unauthorizedRequest } from '../helper/handleResponse.js';
 
-
-module.exports = function(req, res, next){
-    const token = req.header('x-auth-token');
-
-
-    if (!token) {
-        return res.status(401).json({msg: 'There is no token'})
-    }
-
-
+export default function(req, res, next){
+    const {authorization} = req.headers;
+    
     try{
-        const cifrado = jwt.verify(token, "Customer");
-        req.customer = cifrado.customer.id;
-        next();
+        
+    if (!authorization) { // Check if the token is correct
+        return unauthorizedRequest(res,"It's necessary a token")
+    }
+    
+    const token = authorization.replace('Bearer ', '');
+    
+    const encryption = jwt.verify(token, process.env.SECRET_KEY);
+    
+    req.user = encryption.user.id;
+    
+    next();
 
     }catch(error){
         res.status(401).json({msg: 'Token no valid'});
