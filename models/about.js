@@ -13,7 +13,12 @@ const AboutSchema = mongoose.Schema({
             require: true,
             trim: true
         }
-    ]
+    ],
+    service_description: {
+        type: String,
+        require: true,
+        trim: true
+    }
 })
 
 export default mongoose.model('About', AboutSchema)
