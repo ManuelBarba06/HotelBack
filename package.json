@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node .",
-    "dev": "nodemon ."
+    "dev:windows": "set NODE_ENV=dev && nodemon ."
   },
   "author": "",
   "license": "ISC",
